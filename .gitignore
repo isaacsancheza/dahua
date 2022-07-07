@@ -1,6 +1,6 @@
 *
 
-!setup/
+!src/
 !setup.py
 
 !Pipfile
