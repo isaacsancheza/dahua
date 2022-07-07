@@ -1,8 +1,13 @@
-*
+*.sh
+*.pdf
 
-!src/*
-!setup.py
+.env
+.venv/
+.idea/
+**/__pycache__/
 
-!Pipfile
-!.gitignore
-!Pipfile.lock
+Pipfile
+README.md
+
+status
+capabilities
