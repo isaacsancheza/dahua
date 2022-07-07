@@ -1,5 +1,8 @@
 *
-!ptz.py
+
+!setup/
+!setup.py
+
 !Pipfile
 !.gitignore
 !Pipfile.lock
