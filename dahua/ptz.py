@@ -1,15 +1,7 @@
 #!/usr/bin/env python3
-from os import environ
 from re import compile
 from requests import get
 from requests.auth import HTTPDigestAuth
-
-REQUIRED_ENVIRONMENT_VARIABLES = (
-    'DAHUA_PTZ_IP',
-    'DAHUA_PTZ_CHANNEL',
-    'DAHUA_PTZ_USERNAME',
-    'DAHUA_PTZ_PASSWORD',
-)
 
 RGX_PRESET = compile(r'^presets\[(?P<index>\d+)]\.(?P<key>\w+)=(?P<value>.+)$')
 RGX_IS_ARRAY = compile(r'^(?P<subcommand>.*)\[\d]$')
@@ -18,11 +10,11 @@ RGX_RELATIVE_COORDINATES_VALUE = compile(r'^rect\[\d]=(?P<value>\d+)$')
 
 
 class PTZ:
-    def __init__(self):
-        self._ip = environ['DAHUA_PTZ_IP']
-        self._channel = environ['DAHUA_PTZ_CHANNEL']
-        self._username = environ['DAHUA_PTZ_USERNAME']
-        self._password = environ['DAHUA_PTZ_PASSWORD']
+    def __init__(self, ip, channel, username, password):
+        self._ip = ip
+        self._channel = channel
+        self._username = username
+        self._password = password
 
     def go_to(self, x_position, y_position, zoom_in_multiple, speed):
         # x_position: X position from 'Position' not 'ABSPosition'
@@ -144,49 +136,3 @@ class PTZ:
             return response.text
 
         assert response.text.strip() == 'OK', response.text
-
-
-if __name__ == '__main__':
-    from argparse import ArgumentParser
-
-    parser = ArgumentParser('ptz')
-    subparsers = parser.add_subparsers(dest='command')
-
-    get_parser = subparsers.add_parser('get')
-    set_parser = subparsers.add_parser('set')
-
-    get_subparsers = get_parser.add_subparsers(dest='get_command')
-    set_subparsers = set_parser.add_subparsers(dest='set_command')
-
-    get_position_parser = get_subparsers.add_parser('position')
-    set_position_parser = set_subparsers.add_parser('position')
-
-    set_position_parser.add_argument('x', type=float, help='X Position')
-    set_position_parser.add_argument('y', type=float, help='Y Position')
-    set_position_parser.add_argument('z', type=float, help='Zoom [0 - 128.0]')
-    set_position_parser.add_argument('s', type=int, help='Speed [1-8]')
-
-    for required_envrionment_variable in REQUIRED_ENVIRONMENT_VARIABLES:
-        if required_envrionment_variable not in environ:
-            parser.error(f'environment variable {required_envrionment_variable} not set')
-
-    parser.set_defaults(command='', get_command='', set_command='')
-    args = parser.parse_args()
-
-    ptz = PTZ()
-    command = args.command
-    get_command = args.get_command
-    set_command = args.set_command
-
-    if command == 'get':
-        if get_command == 'position':
-            print(ptz.position)
-        else:
-            get_parser.print_help()
-    elif command == 'set':
-        if set_command == 'position':
-            ptz.go_to(args.x, args.y, args.z, args.s)
-        else:
-            set_parser.print_help()
-    else:
-        parser.print_help()
